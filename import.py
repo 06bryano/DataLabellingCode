@@ -4,6 +4,25 @@ from scipy.io import loadmat
 import matplotlib.patches as patches
 from matplotlib.widgets  import RectangleSelector
 
+
+def line_select_callback(eclick, erelease):
+    'eclick and erelease are the press and release events'
+    x1, y1 = eclick.xdata, eclick.ydata
+    x2, y2 = erelease.xdata, erelease.ydata
+    print("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (x1, y1, x2, y2))
+    print(" The button you used were: %s %s" % (eclick.button, erelease.button))
+
+
+def toggle_selector(event):
+    print(' Key pressed.')
+    if event.key in ['Q', 'q'] and toggle_selector.RS.active:
+        print(' RectangleSelector deactivated.')
+        toggle_selector.RS.set_active(False)
+    if event.key in ['A', 'a'] and not toggle_selector.RS.active:
+        print(' RectangleSelector activated.')
+        toggle_selector.RS.set_active(True)
+
+
 class data:
     def __init__(self,d):
         self.rawData = d
@@ -14,36 +33,32 @@ class data:
         self.zpos  = self.rawData['z_pos'][0]
         self.Rangex = [self.xpos[0] , self.xpos[-1]]
         self.Rangey = [self.ypos[0] , self.ypos[-1]]
-        
+   
+
     def display_segment(self):
-        def line_select_callback(eclick, erelease):
-            x1, y1 = eclick.xdata, eclick.ydata
-            print(eclick.xdata)
-            x2, y2 = erelease.xdata, erelease.ydata
-            rect = plt.Rectangle( (min(x1,x2),min(y1,y2)), np.abs(x1-x2), np.abs(y1-y2) )
-            ax.add_patch(rect)
 
-
-            
 
         fig,ax  = plt.subplots()
+            
+        #intensities  = np.zeros((100,100))
+        #ax.imshow(intensities.T,  origin='lower',
+        #       cmap=plt.get_cmap("copper"))#,extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]))
+
+        
                  
-        im = ax.imshow(self.intensities.T,  origin='lower',
+        ax.imshow(self.intensities.T,  origin='lower',
                        cmap=plt.get_cmap("copper"),extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]))
 
-        fig.colorbar(im)
+        #fig.colorbar(im)
 
 
 
 
-        rs = RectangleSelector(ax, line_select_callback,
-                       drawtype='box', useblit=False, button=[1], 
-                       minspanx=500, minspany=500, spancoords='pixels', 
-                       interactive=True)
-
+        toggle_selector.RS = RectangleSelector(ax,  line_select_callback,drawtype='box', useblit=True,button=[1, 3], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
+        plt.connect('key_press_event', toggle_selector)
         plt.show()
 
-#d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat')
+d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat')
 #d = loadmat(r'sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat')
 
 SASdata = data(d)
