@@ -3,6 +3,17 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import matplotlib.patches as patches
 from matplotlib.widgets  import RectangleSelector
+from tkinter import *
+
+master = Tk()
+
+e = Entry(master)
+e.pack()
+e.focus_set()
+
+def callback():
+    print (e.get() )# This is the text you may want to use later
+    
 
 
 def line_select_callback(eclick, erelease):
@@ -26,6 +37,13 @@ def toggle_selector(event):
                                                 fill=False))
         plt.show()
         plt.pause(0.01)
+        print("please select one of the options", SASdata.targetClasses )
+
+        #b = Button(master, text = "OK", width = 10, command = callback)
+        #b.pack()
+        
+        #mainloop()
+
         
 
 class data:
@@ -38,6 +56,7 @@ class data:
         self.zpos  = self.rawData['z_pos'][0]
         self.Rangex = [self.xpos[0] , self.xpos[-1]]
         self.Rangey = [self.ypos[0] , self.ypos[-1]]
+        self.targetClasses = ["Munition","Debris (man made)","Natural","unknown"]
    
 
     def display_segment(self):
@@ -46,10 +65,12 @@ class data:
         fig,self.ax  = plt.subplots()
                
         im = self.ax.imshow(self.intensities.T,  origin='lower',
-                       cmap=plt.get_cmap("copper"),extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]))
+                       cmap=plt.get_cmap("copper"),
+                       extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]),
+                       vmin = -40,
+                       vmax = 0)
 
         fig.colorbar(im)
-
         toggle_selector.RS = RectangleSelector(self.ax,  line_select_callback,drawtype='box', useblit=True,button=[1, 3], minspanx=5, minspany=5,spancoords='pixels',interactive=True)
         plt.connect('key_press_event', toggle_selector)
         plt.show()
