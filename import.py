@@ -12,12 +12,17 @@ from tkinter import *
 #e.focus_set()
 class GUI:
     def __init__(self):
-        self.ObjClassList = ["bomb","shell","debris"]
+        self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
+        self.CertaintyList = ["Certain","Plausable","low_certainty"]
     def ObjChoiceCallback(self,window, ObjClass):
-        #print (e.get() )# This is the text you may want to use later
-        print("ObjClass: ", ObjClass)
+        self.obj = ObjClass
         #b.configure(state=DISABLED)
-        #window.destroy()
+        
+    def certaintyChoiceCallback(self,window, certainty):
+        self.certainty = certainty
+        print("saved: ",self.obj , self.certainty)
+        window.destroy()
+        
 
 def line_select_callback(eclick, erelease):
     'eclick and erelease are the press and release events'
@@ -34,23 +39,35 @@ def toggle_selector(event):
         print("rectangle accepted")
         print(toggle_selector.RS.corners)
         corners = toggle_selector.RS.corners
+        
+        #draw bounding box on figure
         SASdata.ax.add_patch( patches.Rectangle((corners[0][1], corners[1][0]),
                                                 corners[0][0]-corners[0][1],
                                                 corners[1][2]-corners[1][0],
                                                 fill=False))
+        
+        # add labels for size of box
+        #y
+        SASdata.ax.text(corners[0][0],corners[1][0] + (corners[1][2] - corners[1][0])/2,
+                        str(np.around(corners[1][2]-corners[1][0],1)),
+                        fontsize=(10))
+        #x
+        SASdata.ax.text(corners[0][0] + (corners[0][1] - corners[0][0])/2, corners[1][0],
+                str(np.around(corners[0][1]-corners[0][0],1)),
+                fontsize=(10))
+        
+        
         plt.show()
         plt.pause(0.01)
-        print("please select one of the options", SASdata.targetClasses )
 
 
 
         window = Tk() # make window
-        for ObjClass in myGUI.ObjClassList:
+        for row , ObjClass in enumerate(myGUI.ObjClassList):
             print(ObjClass)
-            Button(window, text = ObjClass, width = 10, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).pack()
-        #for certainty in myGUI.CertaintyList:
-        #    Button(window, text = certainty, width = 10, command =  lambda: myGUI.ObjChoiceCallback(window, certainty)).pack()
-                
+            Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).grid(row = row,column = 0)
+        for row, certainty in enumerate(myGUI.CertaintyList):
+            Button(window, text = certainty, width = 20, command =  lambda certainty = certainty: myGUI.certaintyChoiceCallback(window, certainty)).grid(row = row,column = 1)
             
         window.mainloop()
 
@@ -85,7 +102,7 @@ class data:
         plt.connect('key_press_event', toggle_selector)
         plt.show()
 
-d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat')
+#d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat')
 #d = loadmat(r'sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat')
 
 SASdata = data(d)
