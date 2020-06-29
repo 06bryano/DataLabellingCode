@@ -5,16 +5,19 @@ import matplotlib.patches as patches
 from matplotlib.widgets  import RectangleSelector
 from tkinter import *
 
-master = Tk()
 
-e = Entry(master)
-e.pack()
-e.focus_set()
 
-def callback():
-    print (e.get() )# This is the text you may want to use later
-    
-
+#e = Entry(master)
+#e.pack()
+#e.focus_set()
+class GUI:
+    def __init__(self):
+        self.ObjClassList = ["bomb","shell","debris"]
+    def ObjChoiceCallback(self,window, ObjClass):
+        #print (e.get() )# This is the text you may want to use later
+        print("ObjClass: ", ObjClass)
+        #b.configure(state=DISABLED)
+        #window.destroy()
 
 def line_select_callback(eclick, erelease):
     'eclick and erelease are the press and release events'
@@ -39,10 +42,17 @@ def toggle_selector(event):
         plt.pause(0.01)
         print("please select one of the options", SASdata.targetClasses )
 
-        #b = Button(master, text = "OK", width = 10, command = callback)
-        #b.pack()
-        
-        #mainloop()
+
+
+        window = Tk() # make window
+        for ObjClass in myGUI.ObjClassList:
+            print(ObjClass)
+            Button(window, text = ObjClass, width = 10, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).pack()
+        #for certainty in myGUI.CertaintyList:
+        #    Button(window, text = certainty, width = 10, command =  lambda: myGUI.ObjChoiceCallback(window, certainty)).pack()
+                
+            
+        window.mainloop()
 
         
 
@@ -79,6 +89,6 @@ d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simpp
 #d = loadmat(r'sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat')
 
 SASdata = data(d)
-
+myGUI = GUI()
 
 SASdata.display_segment()
