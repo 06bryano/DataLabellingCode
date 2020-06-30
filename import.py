@@ -11,17 +11,29 @@ from tkinter import *
 #e.pack()
 #e.focus_set()
 class GUI:
-    def __init__(self):
+    def __init__(self, filename):
         self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
         self.CertaintyList = ["Certain","Plausable","low_certainty","very uncertain"]
         self.obj = []
+        self.filename = filename
     def ObjChoiceCallback(self,window, ObjClass):
         self.obj.append(ObjClass)
-    def OKCallback(self,window, ):
+    def OKCallback(self,window,corners):
         print("save", self.obj, len(self.obj))
         f = open("demofile2.txt", "a") # "a" create a new file if the specified file doesnt exists        
+        
+        f.write(self.filename)
+        f.write("~")
         f.write(str(self.obj))
+        f.write("~")
+        f.write(str(len(self.obj)))
+        f.write("~")
+        f.write(str(corners))
+        f.write("\n")
+        
+        #FYI...#str.split("~") ... res = ini_list.strip('][').split(', ') 
         f.close()
+        
         self.obj = []
         #b.configure(state=DISABLED)
         window.destroy()
@@ -74,7 +86,7 @@ def toggle_selector(event):
         for row , ObjClass in enumerate(myGUI.ObjClassList):
             Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).grid(row = row,column = 0)
         
-        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window)).grid(row = int(row/2),column = 1)
+        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
         
@@ -113,6 +125,6 @@ filename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
 d = loadmat(r'../DataLabelled/' + filename)
 
 SASdata = data(d)
-myGUI = GUI()
+myGUI = GUI(filename)
 
 SASdata.display_segment()
