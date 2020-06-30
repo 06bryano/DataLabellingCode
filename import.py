@@ -13,31 +13,39 @@ from tkinter import *
 class GUI:
     def __init__(self):
         self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
-        self.CertaintyList = ["Certain","Plausable","low_certainty"]
+        self.CertaintyList = ["Certain","Plausable","low_certainty","very uncertain"]
+        self.obj = []
     def ObjChoiceCallback(self,window, ObjClass):
-        self.obj = ObjClass
+        self.obj.append(ObjClass)
+    def OKCallback(self,window, ):
+        print("save", self.obj, len(self.obj))
+        f = open("demofile2.txt", "a") # "a" create a new file if the specified file doesnt exists        
+        f.write(str(self.obj))
+        f.close()
+        self.obj = []
         #b.configure(state=DISABLED)
-        
-    def certaintyChoiceCallback(self,window, certainty):
-        self.certainty = certainty
-        print("saved: ",self.obj , self.certainty)
         window.destroy()
+        
+
         
 
 def line_select_callback(eclick, erelease):
     'eclick and erelease are the press and release events'
     x1, y1 = eclick.xdata, eclick.ydata
     x2, y2 = erelease.xdata, erelease.ydata
-    print("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (x1, y1, x2, y2))
-    print(" The button you used were: %s %s" % (eclick.button, erelease.button))
+    #print("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (x1, y1, x2, y2))
+    #print(" The button you used were: %s %s" % (eclick.button, erelease.button))
+
     return x1,y1,x2,y2
 
 
 def toggle_selector(event):
+    
+    #if event.key in ['enter'] and toggle_selector.RS.active:
 
+    
     if event.key in ['enter'] and toggle_selector.RS.active:
         print("rectangle accepted")
-        print(toggle_selector.RS.corners)
         corners = toggle_selector.RS.corners
         
         #draw bounding box on figure
@@ -64,11 +72,9 @@ def toggle_selector(event):
 
         window = Tk() # make window
         for row , ObjClass in enumerate(myGUI.ObjClassList):
-            print(ObjClass)
             Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).grid(row = row,column = 0)
-        for row, certainty in enumerate(myGUI.CertaintyList):
-            Button(window, text = certainty, width = 20, command =  lambda certainty = certainty: myGUI.certaintyChoiceCallback(window, certainty)).grid(row = row,column = 1)
-            
+        
+        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
         
@@ -102,8 +108,9 @@ class data:
         plt.connect('key_press_event', toggle_selector)
         plt.show()
 
-#d = loadmat(r'../DataLabelled/sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat')
-#d = loadmat(r'sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat')
+filename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
+#filename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
+d = loadmat(r'../DataLabelled/' + filename)
 
 SASdata = data(d)
 myGUI = GUI()
