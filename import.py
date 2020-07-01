@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.io import loadmat
 import matplotlib.patches as patches
 from matplotlib.widgets  import RectangleSelector
+import matplotlib as mpl
 from tkinter import *
 
 
@@ -11,18 +12,17 @@ from tkinter import *
 #e.pack()
 #e.focus_set()
 class GUI:
-    def __init__(self, filename, labelsTXTfile):
+    def __init__(self, Datafilename, labelsTXTfile):
         self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
-        self.CertaintyList = ["Certain","Plausable","low_certainty","very uncertain"]
         self.obj = []
-        self.filename = filename
+        self.Datafilename = Datafilename
         self.labelsTXTfile = labelsTXTfile
     def ObjChoiceCallback(self,window, ObjClass):
         self.obj.append(ObjClass)
     def OKCallback(self,window,corners,labelsTXTfile):
         print("save", self.obj, len(self.obj))
         f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
-        f.write(self.filename)
+        f.write(self.Datafilename)
         f.write("~")
         f.write(str(self.obj))
         f.write("~")
@@ -86,7 +86,7 @@ def toggle_selector(event):
         for row , ObjClass in enumerate(myGUI.ObjClassList):
             Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).grid(row = row,column = 0)
         
-        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners)).grid(row = int(row/2),column = 1)
+        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners, labelsTXTfile)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
         
@@ -101,14 +101,14 @@ class data:
         self.zpos  = self.rawData['z_pos'][0]
         self.Rangex = [self.xpos[0] , self.xpos[-1]]
         self.Rangey = [self.ypos[0] , self.ypos[-1]]
-        self.targetClasses = ["Munition","Debris (man made)","Natural","unknown"]
         self.labelsTXTfile = labelsTXTfile
+        
 
     def display_segment(self):
 
 
-        fig,self.ax  = plt.subplots()
-               
+        
+        fig,self.ax  = plt.subplots()       
         im = self.ax.imshow(self.intensities.T,  origin='lower',
                        cmap=plt.get_cmap("copper"),
                        extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]),
@@ -120,18 +120,57 @@ class data:
         plt.connect('key_press_event', toggle_selector)
         plt.show()
         
-    def displayLabels(self):
+    def displayLabels(self, Datafilename):
         #read txt file
-        f.open(SASdata.labelsTXTfile)
-        lines = f.readlines()
+        f = open(self.labelsTXTfile)
+        lines = f.readlines() # lines is a list containing all lines in the file
+        
+        cmap = plt.cm.Paired
+        norm = mpl.colors.Normalize(vmin = 0 ,vmax = len(myGUI.ObjClassList))
+        self.uncertainty_stat = np.zeros(len(myGUI.ObjClassList))
+        self.class_stat = np.zeros(len(myGUI.ObjClassList))
+        
+        
+        for line in lines:
+            sections = line.split("~")
+            if sections[0] == Datafilename:
 
-filename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
-#filename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
-d = loadmat(r'../DataLabelled/' + filename)
+                labels = sections[1].strip('][').replace("'","").split(',')
+
+                c = myGUI.ObjClassList.index(labels[0])
+                
+                corners = np.array(sections[3].replace('(','').replace(')','').split(','),dtype = float)
+                self.ax.add_patch( patches.Rectangle((corners[1], corners[4]),
+                                        corners[0]-corners[1],
+                                        corners[6]-corners[4],
+                                        fill=False, color = cmap(norm(c))))
+                self.uncertainty_stat[int(sections[2])] += 1
+                self.class_stat[c] += 1
+
+        f.close()
+        
+    def plotLabelStats(self):
+        fig2,ax2 = plt.subplots(2)
+        ax2[0].bar(range(len(myGUI.ObjClassList)), self.uncertainty_stat)
+        ax2[0].set_xlabel("uncertainty")
+        ax2[1].bar(myGUI.ObjClassList, self.class_stat)
+            
+            
+            
+
+
+Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
+#Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
+d = loadmat(r'../DataLabelled/' + Datafilename)
 
 labelsTXTfile = "demolabelfile.txt"
 
-SASdata = data(d, labelsTXTfile)
-myGUI = GUI(filename, labelsTXTfile)
+myGUI = GUI(Datafilename, labelsTXTfile)
 
+SASdata = data(d, labelsTXTfile)
 SASdata.display_segment()
+SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
+SASdata.plotLabelStats()
+
+
+
