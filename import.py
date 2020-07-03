@@ -95,7 +95,7 @@ class data:
     def __init__(self,d, labelsTXTfile):
         self.rawData = d
         #rawData (Dictionary) items x_pos,y_pos,z_pos,img_out1
-        self.intensities = 10*np.log10(self.rawData['img_out1'] / 10)  # in dB....this needs talking through with Alan!!!
+        self.intensities = 10*np.log10(self.rawData['img_out1'] )#/ np.mean(self.rawData['img_out1']))  # in dB....this needs talking through with Alan!!!
         self.xpos = self.rawData['x_pos'][0]
         self.ypos = self.rawData['y_pos'][0]
         self.zpos  = self.rawData['z_pos'][0]
@@ -112,7 +112,7 @@ class data:
         im = self.ax.imshow(self.intensities.T,  origin='lower',
                        cmap=plt.get_cmap("copper"),
                        extent = (self.xpos[-1],self.xpos[0],self.ypos[0],self.ypos[-1]),
-                       vmin = -40,
+                       vmin = -20,
                        vmax = 0)
 
         fig.colorbar(im)
