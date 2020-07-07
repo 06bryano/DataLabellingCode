@@ -17,8 +17,13 @@ class GUI:
         self.obj = []
         self.Datafilename = Datafilename
         self.labelsTXTfile = labelsTXTfile
-    def ObjChoiceCallback(self,window, ObjClass):
+    def ObjChoiceCallback(self,window, ObjClass,buttons):
         self.obj.append(ObjClass)
+        #disable button once pressed
+        for b in buttons:
+            if b.cget('text') == ObjClass:
+                b.configure(state=DISABLED)
+
     def OKCallback(self,window,corners,labelsTXTfile):
         print("save", self.obj, len(self.obj))
         f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
@@ -35,7 +40,6 @@ class GUI:
         f.close()
         
         self.obj = []
-        #b.configure(state=DISABLED)
         window.destroy()
         
 
@@ -83,9 +87,10 @@ def toggle_selector(event):
 
 
         window = Tk() # make window
+        buttons = []
         for row , ObjClass in enumerate(myGUI.ObjClassList):
-            Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass)).grid(row = row,column = 0)
-        
+            buttons.append(  Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass, buttons))  )
+            buttons[row].grid(row = row,column = 0)
         Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners, labelsTXTfile)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
