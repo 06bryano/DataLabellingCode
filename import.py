@@ -17,12 +17,13 @@ class GUI:
         self.obj = []
         self.Datafilename = Datafilename
         self.labelsTXTfile = labelsTXTfile
-    def ObjChoiceCallback(self,window, ObjClass,buttons):
+    def ObjChoiceCallback(self,window, ObjClass,buttons,T):
         self.obj.append(ObjClass)
         #disable button once pressed
         for b in buttons:
             if b.cget('text') == ObjClass:
                 b.configure(state=DISABLED)
+        T.insert(END,ObjClass + ",")
 
     def OKCallback(self,window,corners,labelsTXTfile):
         print("save", self.obj, len(self.obj))
@@ -87,10 +88,12 @@ def toggle_selector(event):
 
 
         window = Tk() # make window
+        T = Text(window, width=35,height = 3)
+        T.grid(row = 0,columnspan = 2)
         buttons = []
         for row , ObjClass in enumerate(myGUI.ObjClassList):
-            buttons.append(  Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass, buttons))  )
-            buttons[row].grid(row = row,column = 0)
+            buttons.append(  Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass, buttons,T))  )
+            buttons[row].grid(row = row+1,column = 0)
         Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners, labelsTXTfile)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
