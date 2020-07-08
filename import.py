@@ -5,6 +5,8 @@ import matplotlib.patches as patches
 from matplotlib.widgets  import RectangleSelector
 import matplotlib as mpl
 from tkinter import *
+import json
+from datetime import date
 
 
 
@@ -17,6 +19,7 @@ class GUI:
         self.obj = []
         self.Datafilename = Datafilename
         self.labelsTXTfile = labelsTXTfile
+        self.user ="Oscar Bryan"
     def ObjChoiceCallback(self,window, ObjClass,buttons,T):
         self.obj.append(ObjClass)
         #disable button once pressed
@@ -27,19 +30,18 @@ class GUI:
 
     def OKCallback(self,window,corners,labelsTXTfile):
         print("save", self.obj, len(self.obj))
-        f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
-        f.write(self.Datafilename)
-        f.write("~")
-        f.write(str(self.obj))
-        f.write("~")
-        f.write(str(len(self.obj)))
-        f.write("~")
-        f.write(str(corners))
-        f.write("\n")
+        #f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
+        #f.close()
         
-        #FYI...#str.split("~") ... res = ini_list.strip('][').split(', ') 
-        f.close()
+        Label_dic = {"Datafilename":self.Datafilename,
+                     "objects":self.obj,
+                     "uncertainty":len(self.obj),
+                     "corners":corners,
+                     "Date": date.today().strftime('%m/%d/%Y'),
+                     "User":self.user}
         
+        with open('data.txt', 'a') as outfile:
+            json.dump(Label_dic, outfile)
         self.obj = []
         window.destroy()
         
@@ -177,8 +179,8 @@ myGUI = GUI(Datafilename, labelsTXTfile)
 
 SASdata = data(d, labelsTXTfile)
 SASdata.display_segment()
-SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
-SASdata.plotLabelStats()
+#SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
+#SASdata.plotLabelStats()
 
 
 
