@@ -14,11 +14,11 @@ from datetime import date
 #e.pack()
 #e.focus_set()
 class GUI:
-    def __init__(self, Datafilename, labelsTXTfile):
+    def __init__(self, Datafilename, labelsfile):
         self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
         self.obj = []
         self.Datafilename = Datafilename
-        self.labelsTXTfile = labelsTXTfile
+        self.labelsfile = labelsfile
         self.user ="Oscar Bryan"
     def ObjChoiceCallback(self,window, ObjClass,buttons,T):
         self.obj.append(ObjClass)
@@ -28,7 +28,7 @@ class GUI:
                 b.configure(state=DISABLED)
         T.insert(END,ObjClass + ",")
 
-    def OKCallback(self,window,corners,labelsTXTfile):
+    def OKCallback(self,window,corners,labelsfile):
         print("save", self.obj, len(self.obj))
         #f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
         #f.close()
@@ -40,8 +40,10 @@ class GUI:
                      "Date": date.today().strftime('%m/%d/%Y'),
                      "User":self.user}
         
-        with open('data.txt', 'a') as outfile:
-            json.dump(Label_dic, outfile)
+        with open(labelsfile, "a", encoding='utf-8') as f:
+            json_record = json.dumps(Label_dic, ensure_ascii=False)
+            f.write(json_record + '\n')
+
         self.obj = []
         window.destroy()
         
@@ -96,7 +98,7 @@ def toggle_selector(event):
         for row , ObjClass in enumerate(myGUI.ObjClassList):
             buttons.append(  Button(window, text = ObjClass, width = 20, command =  lambda ObjClass = ObjClass: myGUI.ObjChoiceCallback(window, ObjClass, buttons,T))  )
             buttons[row].grid(row = row+1,column = 0)
-        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners, labelsTXTfile)).grid(row = int(row/2),column = 1)
+        Button(window, text = "OK", width = 20, command =  lambda: myGUI.OKCallback(window, corners, labelsfile)).grid(row = int(row/2),column = 1)
         window.mainloop()
 
         
@@ -132,32 +134,27 @@ class data:
         
     def displayLabels(self, Datafilename):
         #read txt file
-        f = open(self.labelsTXTfile)
-        lines = f.readlines() # lines is a list containing all lines in the file
-        
         cmap = plt.cm.Paired
         norm = mpl.colors.Normalize(vmin = 0 ,vmax = len(myGUI.ObjClassList))
         self.uncertainty_stat = np.zeros(len(myGUI.ObjClassList))
         self.class_stat = np.zeros(len(myGUI.ObjClassList))
         
+        with open(self.labelsTXTfile, 'r', encoding='utf-8') as f:
+            for line in f:
+                labelObj = json.loads(line.rstrip('\n|\r'))
+                if labelObj['Datafilename']==Datafilename:
+                    
+                    c = myGUI.ObjClassList.index( labelObj['objects'][0])
+                    
+                    self.ax.add_patch( patches.Rectangle((labelObj['corners'][0][1], labelObj['corners'][1][0]),
+                       labelObj['corners'][0][0]-labelObj['corners'][0][1],
+                       labelObj['corners'][1][2]-labelObj['corners'][1][0],
+                       fill=False, color = cmap(norm(c))))
+                    self.uncertainty_stat[labelObj['uncertainty']] += 1
+                    self.class_stat[c] += 1
         
-        for line in lines:
-            sections = line.split("~")
-            if sections[0] == Datafilename:
 
-                labels = sections[1].strip('][').replace("'","").split(',')
 
-                c = myGUI.ObjClassList.index(labels[0])
-                
-                corners = np.array(sections[3].replace('(','').replace(')','').split(','),dtype = float)
-                self.ax.add_patch( patches.Rectangle((corners[1], corners[4]),
-                                        corners[0]-corners[1],
-                                        corners[6]-corners[4],
-                                        fill=False, color = cmap(norm(c))))
-                self.uncertainty_stat[int(sections[2])] += 1
-                self.class_stat[c] += 1
-
-        f.close()
         
     def plotLabelStats(self):
         fig2,ax2 = plt.subplots(2)
@@ -173,14 +170,14 @@ Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
 #Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
 d = loadmat(r'../DataLabelled/' + Datafilename)
 
-labelsTXTfile = "demolabelfile.txt"
+labelsfile = "data.jsonl"
 
-myGUI = GUI(Datafilename, labelsTXTfile)
+myGUI = GUI(Datafilename, labelsfile)
 
-SASdata = data(d, labelsTXTfile)
+SASdata = data(d, labelsfile)
 SASdata.display_segment()
-#SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
-#SASdata.plotLabelStats()
+SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
+SASdata.plotLabelStats()
 
 
 
