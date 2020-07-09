@@ -92,11 +92,11 @@ def toggle_selector(event):
         #y
         SASdata.ax.text(corners[0][0],corners[1][0] + (corners[1][2] - corners[1][0])/2,
                         str(np.around(corners[1][2]-corners[1][0],1)),
-                        fontsize=(10))
+                        fontsize=(10), color = 'red' )
         #x
         SASdata.ax.text(corners[0][0] + (corners[0][1] - corners[0][0])/2, corners[1][0],
                 str(np.around(corners[0][1]-corners[0][0],1)),
-                fontsize=(10))
+                fontsize=(10), color = 'red')
         
         
         plt.show()
@@ -182,8 +182,8 @@ class data:
             
 
 
-#Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
-Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
+Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
+#Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
 d = loadmat(r'../DataLabelled/' + Datafilename)
 
 labelsfile = "Labels.jsonl"
