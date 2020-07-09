@@ -7,6 +7,7 @@ import matplotlib as mpl
 from tkinter import *
 import json
 from datetime import date
+from os import path
 
 
 
@@ -146,6 +147,9 @@ class data:
         
     def displayLabels(self, Datafilename):
         #read txt file
+        
+
+        
         cmap = plt.cm.Paired
         norm = mpl.colors.Normalize(vmin = 0 ,vmax = len(myGUI.ObjClassList))
         self.uncertainty_stat = np.zeros(len(myGUI.ObjClassList))
@@ -178,18 +182,20 @@ class data:
             
 
 
-Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
-#Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
+#Datafilename = "sasi-20150413-181203-vrak_13c-2-SLH90-BP-000_simppackage.mat"
+Datafilename = "sasi-20150413-181203-vrak_13c-2-PLH90-BP-000_simppackage.mat"
 d = loadmat(r'../DataLabelled/' + Datafilename)
 
-labelsfile = "data.jsonl"
+labelsfile = "Labels.jsonl"
 
 myGUI = GUI(Datafilename, labelsfile)
 
 SASdata = data(d, labelsfile)
 SASdata.display_segment()
-SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
-SASdata.plotLabelStats()
+
+if path.exists(labelsfile):
+    SASdata.displayLabels(Datafilename) # Datafilename is data .mat file 
+    SASdata.plotLabelStats()
 
 
 
