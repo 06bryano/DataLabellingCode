@@ -15,23 +15,36 @@ from datetime import date
 #e.focus_set()
 class GUI:
     def __init__(self, Datafilename, labelsfile):
-        self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural"]
+        self.ObjClassList = ["105mm_Shell","150mm_Shell","KC50","KC250","KC500","Drum","Can","Crate","Grenade","Debris_(man_made)","Natural","UNKNOWN"]
         self.obj = []
         self.Datafilename = Datafilename
         self.labelsfile = labelsfile
         self.user ="Oscar Bryan"
     def ObjChoiceCallback(self,window, ObjClass,buttons,T):
+        try:
+            if self.obj[0] == "UNKNOWN":  #if first calss chosen was unknown allow only one other lcass to be picked
+                for b in buttons:
+                    b.configure(state=DISABLED)
+
+        except:
+            pass
         self.obj.append(ObjClass)
         #disable button once pressed
+        
+            
         for b in buttons:
             if b.cget('text') == ObjClass:
                 b.configure(state=DISABLED)
+            if b.cget('text') == "UNKNOWN" and ObjClass != "UNKNOWN":
+                b.configure(state=DISABLED)
+            
+            
+            
         T.insert(END,ObjClass + ",")
 
     def OKCallback(self,window,corners,labelsfile):
         print("save", self.obj, len(self.obj))
-        #f = open(self.labelsTXTfile , "a") # "a" create a new file if the specified file doesnt exists        
-        #f.close()
+
         
         Label_dic = {"Datafilename":self.Datafilename,
                      "objects":self.obj,
@@ -54,7 +67,6 @@ def line_select_callback(eclick, erelease):
     'eclick and erelease are the press and release events'
     x1, y1 = eclick.xdata, eclick.ydata
     x2, y2 = erelease.xdata, erelease.ydata
-    #print("(%3.2f, %3.2f) --> (%3.2f, %3.2f)" % (x1, y1, x2, y2))
     #print(" The button you used were: %s %s" % (eclick.button, erelease.button))
 
     return x1,y1,x2,y2
